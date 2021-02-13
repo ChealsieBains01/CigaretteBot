@@ -4,6 +4,7 @@ import json
 import numpy as np
 import time
 from PIL import Image, ImageDraw
+import serial
 
 # Set the ROOT_DIR variable to the root directory of the Mask_RCNN git repo
 ROOT_DIR = './Mask_RCNN'
