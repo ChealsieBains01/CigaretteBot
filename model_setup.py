@@ -9,6 +9,7 @@ def model_setup():
     # Set the ROOT_DIR variable to the root directory of the Mask_RCNN git repo
     ROOT_DIR = './Mask_RCNN'
     assert os.path.exists(ROOT_DIR), 'ROOT_DIR does not exist. Did you forget to read the instructions above? ;)'
+    print(ROOT_DIR)
 
     # Import mrcnn libraries
     sys.path.append(ROOT_DIR)
