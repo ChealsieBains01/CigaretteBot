@@ -5,8 +5,17 @@ import serial
 import skimage
 from model_setup import model_setup
 from coordinates import process_image
+import struct
+
+
+def write_read(x):
+    arduino.write(bytes(x, 'utf-8'))
+    time.sleep(.1)
+    data = arduino.readline()
+    return data
 
 model = model_setup()
+arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.2)
 
 real_test_dir = './img'
 image_paths = []
@@ -17,15 +26,18 @@ for filename in os.listdir(real_test_dir):
 for image_path in image_paths:
     coordinates = process_image(image_path, model)
     for coordinate in coordinates:
-        print(coordinate)
+        c = str(coordinate[0]) + ", " + str(coordinate[1])
+        arduino.write(bytes(c, 'utf-8'))
+        print(c)
+        while arduino.readline() != b"Done":
+            continue
+
+
+
 
 # Serial Communication
-# arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
-# def write_read(x):
-#     arduino.write(bytes(x, 'utf-8'))
-#     time.sleep(0.05)
-#     data = arduino.readline()
-#     return data
+#
+
 #
 # while True:
 #     num = input("Enter a number: ")
