@@ -12,9 +12,9 @@ model = model_setup()
 
 real_test_dir = './img'
 image_paths = []
-#for filename in os.listdir(real_test_dir):
-    #if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
-        #image_paths.append(os.path.join(real_test_dir, filename))
+arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
+arduino.flush()
+
 
 with picamera.PiCamera() as camera:
     camera.resolution = (1024, 768)
@@ -27,24 +27,19 @@ def process_photo():
         camera.capture('cigarette.jpg')
     return process_image('cigarette.jpg', model)
     
+def arduino_read():
+            line = arduino.readline().decode('utf-8').rstrip()
+            print(line)
 
 while True:
     coordinates = process_photo()
-    # 2 Cigarette centered, start roller
+    print("Coordinates:" + str(coordinates) + "\n")
     if not coordinates:
         continue
+    else:
+        arduino.write((str(coordinates[0]) + '\n').encode('utf-8'))
+        line = arduino.readline().decode('utf-8').rstrip()
+        print(line)
 
     time.sleep(3)
 
-# Serial Communication
-# arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
-# def write_read(x):
-#     arduino.write(bytes(x, 'utf-8'))
-#     time.sleep(0.05)
-#     data = arduino.readline()
-#     return data
-#
-# while True:
-#     num = input("Enter a number: ")
-#     value = write_read(num)
-#     print(value)
