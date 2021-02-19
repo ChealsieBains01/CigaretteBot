@@ -9,13 +9,13 @@ import time
 import picamera
 
 model = model_setup()
-arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.2)
 
 real_test_dir = './img'
 image_paths = []
 arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
 arduino.flush()
 
+detected = False
 
 with picamera.PiCamera() as camera:
     camera.resolution = (1024, 768)
@@ -28,19 +28,17 @@ def process_photo():
         camera.capture('cigarette.jpg')
     return process_image('cigarette.jpg', model)
 
-def arduino_read():
-            line = arduino.readline().decode('utf-8').rstrip()
-            print(line)
-
 while True:
     coordinates = process_photo()
     print("Coordinates:" + str(coordinates) + "\n")
-    if not coordinates:
-        continue
+    if coordinates:
+        if detected:
+            arduino.write((str(coordinates[0]) + '\n').encode('utf-8'))
+        else:
+            arduino.write(('Detected Cigarette\n').encode('utf-8'))
+            detected = True
+        print(arduino.readline().decode('utf-8').rstrip())
     else:
-        arduino.write((str(coordinates[0]) + '\n').encode('utf-8'))
-        line = arduino.readline().decode('utf-8').rstrip()
-        print(line)
+        detected = False
 
-    time.sleep(3)
-
+    time.sleep(1)
