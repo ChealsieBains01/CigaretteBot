@@ -9,6 +9,7 @@ import time
 import picamera
 
 model = model_setup()
+arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.2)
 
 real_test_dir = './img'
 image_paths = []
@@ -26,7 +27,7 @@ def process_photo():
     with picamera.PiCamera() as camera:
         camera.capture('cigarette.jpg')
     return process_image('cigarette.jpg', model)
-    
+
 def arduino_read():
             line = arduino.readline().decode('utf-8').rstrip()
             print(line)
