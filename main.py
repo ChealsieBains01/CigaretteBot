@@ -34,11 +34,15 @@ while True:
     if coordinates:
         if detected:
             arduino.write((str(coordinates[0]) + '\n').encode('utf-8'))
+            line = arduino.readline().decode('utf-8').rstrip()
+            print(line)
         else:
             arduino.write(('Detected Cigarette\n').encode('utf-8'))
+            while(arduino.readline().decode('utf-8').rstrip() != 'Stopped'):
+                time.sleep(1)
             detected = True
-        print(arduino.readline().decode('utf-8').rstrip())
     else:
         detected = False
 
     time.sleep(1)
+
