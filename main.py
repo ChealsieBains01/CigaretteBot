@@ -5,41 +5,44 @@ import serial
 import skimage
 from model_setup import model_setup
 from coordinates import process_image
-import struct
-
-
-def write_read(x):
-    arduino.write(bytes(x, 'utf-8'))
-    time.sleep(.1)
-    data = arduino.readline()
-    return data
+import time
+import picamera
 
 model = model_setup()
-arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.2)
 
 real_test_dir = './img'
 image_paths = []
-for filename in os.listdir(real_test_dir):
-    if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
-        image_paths.append(os.path.join(real_test_dir, filename))
+arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
+arduino.flush()
 
-for image_path in image_paths:
-    coordinates = process_image(image_path, model)
-    for coordinate in coordinates:
-        c = str(coordinate[0]) + ", " + str(coordinate[1])
-        arduino.write(bytes(c, 'utf-8'))
-        print(c)
-        while arduino.readline() != b"Done":
-            continue
+detected = False
 
+with picamera.PiCamera() as camera:
+    camera.resolution = (1024, 768)
+    camera.start_preview()
+    # Camera warm-up time
+    time.sleep(2)
 
+def process_photo():
+    with picamera.PiCamera() as camera:
+        camera.capture('cigarette.jpg')
+    return process_image('cigarette.jpg', model)
 
+while True:
+    coordinates = process_photo()
+    print("Coordinates:" + str(coordinates) + "\n")
+    if coordinates:
+        if detected:
+            arduino.write((str(coordinates[0]) + '\n').encode('utf-8'))
+            line = arduino.readline().decode('utf-8').rstrip()
+            print(line)
+        else:
+            arduino.write(('Detected Cigarette\n').encode('utf-8'))
+            while(arduino.readline().decode('utf-8').rstrip() != 'Stopped'):
+                time.sleep(1)
+            detected = True
+    else:
+        detected = False
 
-# Serial Communication
-#
+    time.sleep(1)
 
-#
-# while True:
-#     num = input("Enter a number: ")
-#     value = write_read(num)
-#     print(value)
